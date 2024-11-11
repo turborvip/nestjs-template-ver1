@@ -1,21 +1,17 @@
-
-import {
-    Controller,
-    Get,
-    Request,
-  } from '@nestjs/common';
+import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 import { Roles } from '../roles/roles.decorator';
 import { Role } from '../roles/roles.enum';
-  
-  @Controller('user')
-  export class UsersController {
+import { RolesGuard } from '../roles/roles.guard';
 
-    constructor() {}
-  
-    @Get('profile')
-    @Roles([Role.Admin])
-    getProfile(@Request() req) {
-      return "hi";
-    }
+@Controller('user')
+export class UsersController {
+  constructor() {}
+
+  @Get('profile')
+  @Roles([Role.Admin])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  @UseGuards(RolesGuard)
+  getProfile(@Request() req) {
+    return 'hi';
   }
-  
+}
