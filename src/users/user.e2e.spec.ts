@@ -8,19 +8,31 @@ import { AuthModule } from '../auth/auth.module';
 describe('2e2 for Users', () => {
   let app: INestApplication;
   let moduleRef: TestingModule;
-  let userService = { findOne: jest.fn() };
-  let account =  {username:"john",password:"changeme"}
+  let account = { username: 'john', password: 'changeme' };
+  let access_token: string;
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
       imports: [UsersModule, AuthModule],
-    })
-      .overrideProvider(UsersService)
-      .useValue(userService)
-      .compile();
+    }).compile();
 
     app = moduleRef.createNestApplication();
     await app.init();
+  });
+
+  describe('User login', () => {
+    it(`/Post using account`, async () => {
+      const result = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send(account)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('access_token');
+          expect(res.body.access_token).toEqual(expect.any(String)); // Check that access_token is a string
+        });
+      access_token = result.body.access_token;
+      return result;
+    }, 10000);
   });
 
   describe('Get profile', () => {
@@ -34,22 +46,11 @@ describe('2e2 for Users', () => {
         });
     });
     it(`/GET profile after login`, async() => {
-      const loginSuccess: any = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send(JSON.stringify(account))
-        .expect(200)
-        .expect({
-          access_token: expect.any(String),
-        });
-
       return request(app.getHttpServer())
         .get('/user/profile')
-        .set('Authorization', loginSuccess.body.access_token)
-        .expect(401)
-        .expect({
-          message: 'Unauthorized', 
-          statusCode: 401,
-        });
+        .set('Authorization', `Bearer ${access_token}`)
+        .expect(200)
+        .expect('hi');
     });
   });
 
