@@ -11,7 +11,9 @@ import { JwtService } from '@nestjs/jwt';
 @Module({
   imports: [CatsModule, AuthModule],
   controllers: [AppController],
-  providers: [AppService, JwtService,
+  providers: [
+    AppService,
+    JwtService,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

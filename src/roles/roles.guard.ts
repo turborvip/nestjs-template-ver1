@@ -1,22 +1,34 @@
 // auth/roles.guard.ts
-import { Injectable, ExecutionContext, ForbiddenException, CanActivate, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  ForbiddenException,
+  CanActivate,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from './roles.decorator';
 import { Role } from './roles.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { jwtConstants } from '../auth/constants';
 
 @Injectable()
 export class RolesGuard extends JwtAuthGuard implements CanActivate {
-  constructor(private reflector: Reflector,private jwtService: JwtService) {
+  constructor(
+    private reflector: Reflector,
+    private jwtService: JwtService,
+  ) {
     super(); // Calls the base JwtAuthGuard constructor
-  }  
+  }
 
   // Override the canActivate method to check roles
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.get<Role[]>(ROLES_KEY, context.getHandler()); // Get roles from metadata
+    const requiredRoles = this.reflector.get<Role[]>(
+      ROLES_KEY,
+      context.getHandler(),
+    ); // Get roles from metadata
     if (!requiredRoles) {
       return true; // No roles specified, allow access
     }
@@ -28,14 +40,17 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
     }
     // encrypt token using secret key
     try {
-      const decoded = this.jwtService.verify(token,{
-        secret: jwtConstants.secret
+      const decoded = this.jwtService.verify(token, {
+        secret: jwtConstants.secret,
       }); // Verifying the token
       console.log('Decoded token:', decoded);
 
       // Add your role-checking logic here
       // Example: Check if the user has the required role
-      const requiredRoles = this.reflector.get<string[]>('roles', context.getHandler());
+      const requiredRoles = this.reflector.get<string[]>(
+        'roles',
+        context.getHandler(),
+      );
       if (requiredRoles && !this.hasRequiredRole(decoded, requiredRoles)) {
         console.log('User does not have required roles');
         throw new UnauthorizedException('Insufficient permissions');
@@ -56,6 +71,6 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
   private hasRequiredRole(decodedToken: any, requiredRoles: string[]): boolean {
     // Example role-checking logic; replace 'roles' with the actual property
     const userRoles = decodedToken.roles || [];
-    return requiredRoles.some(role => userRoles.includes(role));
+    return requiredRoles.some((role) => userRoles.includes(role));
   }
 }

@@ -12,7 +12,7 @@ export class CatsService {
 
   create(cat: Cat) {
     this.cats.push(cat);
-    return {msg: 'cat created'}
+    return { msg: 'cat created' };
   }
 
   findAll(): Cat[] {

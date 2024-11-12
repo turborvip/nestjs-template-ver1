@@ -1,8 +1,6 @@
 interface Cat {
-    name: string;
-    age: number;
-    breed: string;
+  name: string;
+  age: number;
+  breed: string;
 }
- export {
-    Cat
- }
+export { Cat };

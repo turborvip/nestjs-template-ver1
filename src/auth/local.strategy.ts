@@ -8,7 +8,6 @@ import { ContextIdFactory, ModuleRef } from '@nestjs/core';
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(
     private authService: AuthService,
-    private moduleRef: ModuleRef,
   ) {
     super({
       passReqToCallback: true,
@@ -27,7 +26,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (!result) {
       throw new UnauthorizedException();
     }
-    if(result.err){
+    if (result.err) {
       throw new UnauthorizedException(result.err);
     }
     return result;

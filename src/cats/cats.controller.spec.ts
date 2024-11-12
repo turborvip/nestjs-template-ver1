@@ -16,13 +16,14 @@ describe('AppController', () => {
   describe('get cats', () => {
     it('get cats return array object of cats', () => {
       const catsController = app.get(CatsController);
-      expect(catsController.findAll()).toStrictEqual([{
-        name: 'Tom',
-        age: 5,
-        breed: 'Persian',
-      }]);
+      expect(catsController.findAll()).toStrictEqual([
+        {
+          name: 'Tom',
+          age: 5,
+          breed: 'Persian',
+        },
+      ]);
     });
-
   });
 
   describe('create a cats', () => {
@@ -32,9 +33,10 @@ describe('AppController', () => {
         name: 'BigMom',
         age: 8,
         breed: 'BaTu',
-      }
+      };
       expect(catsController.create(newCat)).toEqual({
-        msg: 'cat created'});
+        msg: 'cat created',
+      });
     });
   });
 });
