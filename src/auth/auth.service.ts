@@ -1,19 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { hashUtil } from '../util/hash.util';
+import { RedisService } from '../database/redis.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private jwtService: JwtService,
+    private readonly redisService: RedisService
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne(username);
 
     if (user) {
-      if (user.password === pass) {
+      if (await hashUtil.compare(pass, user.password)) {
         const { password, ...result } = user;
         return result;
       } else {
@@ -34,8 +37,18 @@ export class AuthService {
       sub: user.userId,
       roles: user.roles,
     };
+    const token = this.jwtService.sign(payload);
     return {
-      access_token: this.jwtService.sign(payload),
+      message: 'success',
+      access_token: token,
     };
+  }
+
+  async logout(token: string,): Promise<void> {
+    try {
+      await this.redisService.addToBlacklist({token});
+    } catch (error) {
+      throw new Error('Logout failed');
+    }
   }
 }

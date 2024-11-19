@@ -7,6 +7,9 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { AuthController } from './auth.controller';
+import { RedisService } from '../database/redis.service';
+import { DatabaseModule } from '../database/database.module';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -16,9 +19,10 @@ import { AuthController } from './auth.controller';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '3m' },
     }),
+    DatabaseModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, RedisService, ConfigService],
   exports: [AuthService],
 })
 export class AuthModule {}

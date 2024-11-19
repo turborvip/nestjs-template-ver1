@@ -2,7 +2,6 @@
 import {
   Injectable,
   ExecutionContext,
-  ForbiddenException,
   CanActivate,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,18 +12,20 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { jwtConstants } from '../auth/constants';
+import { RedisService } from '../database/redis.service';
 
 @Injectable()
 export class RolesGuard extends JwtAuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private jwtService: JwtService,
+    private readonly redisService: RedisService
   ) {
     super(); // Calls the base JwtAuthGuard constructor
   }
 
   // Override the canActivate method to check roles
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.get<Role[]>(
       ROLES_KEY,
       context.getHandler(),
@@ -37,6 +38,10 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException();
+    }
+    const checkTokenBlacklist = await this.redisService.isTokenBlacklisted(token);
+    if(checkTokenBlacklist){
+      throw new UnauthorizedException("Token is blacklisted");
     }
     // encrypt token using secret key
     try {
@@ -55,7 +60,8 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
         console.log('User does not have required roles');
         throw new UnauthorizedException('Insufficient permissions');
       }
-
+      const request = context.switchToHttp().getRequest();
+      request.user = decoded;
       return true;
     } catch (error) {
       console.error('Error verifying token:', error.message);
