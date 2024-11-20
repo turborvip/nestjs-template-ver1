@@ -9,17 +9,17 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private jwtService: JwtService,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne(username);
 
     if (user) {
-      const checkPass = await hashUtil.compare(pass, user.password)
+      const checkPass = await hashUtil.compare(pass, user.password);
       if (checkPass) {
-        const { password, ...result } = user;
-        return result;
+        delete user.password;
+        return user;
       } else {
         return {
           err: 'Wrong password',
@@ -33,7 +33,7 @@ export class AuthService {
 
   async login(username: string, password: string) {
     const user = await this.validateUser(username, password);
-    if(user?.err) {
+    if (user?.err) {
       throw new UnauthorizedException(user.err);
     }
     const payload = {
@@ -48,7 +48,7 @@ export class AuthService {
     };
   }
 
-  async logout(token: string,): Promise<void> {
-      await this.redisService.addToBlacklist({token});
+  async logout(token: string): Promise<void> {
+    await this.redisService.addToBlacklist({ token });
   }
 }

@@ -4,21 +4,19 @@ import { INestApplication } from '@nestjs/common';
 import { UsersModule } from './users.module';
 import { AuthModule } from '../auth/auth.module';
 import { DatabaseModule } from '../database/database.module';
-import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from '../roles/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 import { RedisService } from '../database/redis.service';
 
-
 describe('2e2 for Users', () => {
   let app: INestApplication;
   let moduleRef: TestingModule;
   let redisService: RedisService;
-  let accountAdmin = { username: 'john', password: '123456a' };
-  let accountUser = { username: 'maria', password: '123456a' };
+  const accountAdmin = { username: 'john', password: '123456a' };
+  const accountUser = { username: 'maria', password: '123456a' };
 
-  let changePasswordData = {
+  const changePasswordData = {
     username: 'john',
     oldPassword: '123456a',
     newPassword: '1234567a',
@@ -27,11 +25,7 @@ describe('2e2 for Users', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [
-        UsersModule,
-        AuthModule,
-        DatabaseModule,
-      ],
+      imports: [UsersModule, AuthModule, DatabaseModule],
       providers: [
         JwtService,
         RedisService,
@@ -47,11 +41,25 @@ describe('2e2 for Users', () => {
     await app.init();
     redisService = moduleRef.get<RedisService>(RedisService);
     redisService.clearAll();
+
+    const result = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send(accountAdmin);
+
+    access_token = result.body.access_token;
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('User login', () => {
     it(`/Post using account`, async () => {
-      const result = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/auth/login')
         .send(accountAdmin)
         .expect(200)
@@ -59,8 +67,6 @@ describe('2e2 for Users', () => {
           expect(res.body).toHaveProperty('access_token');
           expect(res.body.access_token).toEqual(expect.any(String)); // Check that access_token is a string
         });
-      access_token = result.body.access_token;
-      return result;
     });
   });
 
@@ -92,7 +98,7 @@ describe('2e2 for Users', () => {
           expect(res.body).toHaveProperty('access_token');
           expect(res.body.access_token).toEqual(expect.any(String)); // Check that access_token is a string
         });
-      let tokenUser = result.body.access_token;
+      const tokenUser = result.body.access_token;
 
       return await request(app.getHttpServer())
         .get('/user/profile')
@@ -104,8 +110,6 @@ describe('2e2 for Users', () => {
           statusCode: 401,
         });
     });
-
-    
   });
 
   describe('Change password', () => {
@@ -117,9 +121,9 @@ describe('2e2 for Users', () => {
           message: 'Unauthorized',
           statusCode: 401,
         });
-    },20000);
+    });
     it(`/Post change password with wrong username`, async () => {
-      return request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/user/change-password')
         .set('Authorization', `Bearer ${access_token}`)
         .send({ ...changePasswordData, username: 'xxx' })
@@ -127,10 +131,10 @@ describe('2e2 for Users', () => {
         .expect({
           error: 'Usernames wrong!',
         });
-    },20000);
+    });
 
     it(`/Post change password with wrong old password`, async () => {
-      return request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/user/change-password')
         .set('Authorization', `Bearer ${access_token}`)
         .send({ ...changePasswordData, oldPassword: 'xxx' })
@@ -138,19 +142,24 @@ describe('2e2 for Users', () => {
         .expect({
           error: 'Wrong password',
         });
-    },20000);
+    });
 
     it(`/Post change password with true password`, async () => {
-      return request(app.getHttpServer())
+      const result = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send(accountAdmin);
+
+      const newToken = result.body.access_token;
+
+      await request(app.getHttpServer())
         .post('/user/change-password')
-        .set('Authorization', `Bearer ${access_token}`)
+        .set('Authorization', `Bearer ${newToken}`)
         .send({ ...changePasswordData })
         .expect(200)
         .expect({
           message: 'Password changed successfully',
         });
-    },20000);
-
+    });
   });
 
   afterAll(async () => {

@@ -113,10 +113,12 @@ describe('RedisService', () => {
     expect(await service.isTokenBlacklisted(token)).toBeTruthy();
     await service.removeFromBlacklist(token);
     expect(await service.isTokenBlacklisted(token)).toBeFalsy();
-  },10000);
+  });
 
   it('should handle Redis close event', () => {
-    const spyConsoleLog = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const spyConsoleLog = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
     redisClient.emit('close'); // Kích hoạt sự kiện 'close' (Redis sẽ phát ra sự kiện này)
 
     expect(spyConsoleLog).toHaveBeenCalledWith('Redis connection closed');
@@ -125,25 +127,30 @@ describe('RedisService', () => {
   });
 
   it('should handle Redis error event', () => {
-    const spyConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const spyConsoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     const mockError = new Error('Mock Redis error');
-  
+
     redisClient.emit('error', mockError); // Kích hoạt sự kiện 'error'
-  
-    expect(spyConsoleError).toHaveBeenCalledWith('Redis connection error:', mockError);
-  
+
+    expect(spyConsoleError).toHaveBeenCalledWith(
+      'Redis connection error:',
+      mockError,
+    );
+
     spyConsoleError.mockRestore();
   });
 
   it('should handle Redis reconnecting event', () => {
-    const spyConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
-  
+    const spyConsoleLog = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
+
     redisClient.emit('reconnecting'); // Kích hoạt sự kiện 'reconnecting'
-  
+
     expect(spyConsoleLog).toHaveBeenCalledWith('Redis is reconnecting...');
-  
+
     spyConsoleLog.mockRestore();
   });
-  
-  
 });

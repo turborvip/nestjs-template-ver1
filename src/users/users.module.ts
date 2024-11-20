@@ -9,6 +9,6 @@ import { RedisService } from '../database/redis.service';
   imports: [DatabaseModule],
   providers: [...userProviders, UsersService, JwtService, RedisService], // Register UsersService in the providers array
   controllers: [UsersController],
-  exports: [UsersService,RedisService], // Export UsersService so it can be used in other modules
+  exports: [UsersService, RedisService], // Export UsersService so it can be used in other modules
 })
 export class UsersModule {}

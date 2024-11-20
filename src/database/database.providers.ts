@@ -41,19 +41,19 @@ export const databaseProviders = [
 
   {
     provide: 'REDIS_CONNECTION', // Provider for Redis connection
-    
-    useFactory: async() => {
+
+    useFactory: async () => {
       const redis = new Redis({
-        host: 'localhost',  // Redis server address (localhost or Redis container name)
-        port: 6379,         // Redis server port
+        host: 'localhost', // Redis server address (localhost or Redis container name)
+        port: 6379, // Redis server port
         password: '123456a', // Redis password (if set)
-        db: 0,              // Redis database index (default is 0)
+        db: 0, // Redis database index (default is 0)
       });
       // Logging connection and disconnection events
       redis.on('connect', () => {
         console.log('Redis connected');
       });
-      
+
       redis.on('ready', () => {
         console.log('Redis connection is ready');
       });

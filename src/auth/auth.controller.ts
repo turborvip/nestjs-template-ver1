@@ -1,13 +1,11 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
   Request,
   Response,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './public.decorator';
@@ -23,12 +21,13 @@ export class AuthController {
   @Post('login')
   async signIn(@Body() signInDto: Record<string, any>, @Response() res) {
     try {
-      const result = await this.authService.login(signInDto.username, signInDto.password);
+      const result = await this.authService.login(
+        signInDto.username,
+        signInDto.password,
+      );
       return res.status(200).json(result);
     } catch (error) {
-      return res
-        .status(error?.status || 500)
-        .json({ error: error.message });
+      return res.status(error?.status || 500).json({ error: error.message });
     }
   }
 

@@ -16,16 +16,14 @@ describe('2e2 for Auth', () => {
   let app: INestApplication;
   let moduleRef: TestingModule;
   let jwtService: JwtService;
-  let accountAdmin = { username: 'john', password: '123456a' };
+  const accountAdmin = { username: 'john', password: '123456a' };
   let access_token: string;
+  let authService: AuthService;
+  let redisService: RedisService;
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [
-        AuthModule,
-        DatabaseModule,
-        UsersModule,
-      ],
+      imports: [AuthModule, DatabaseModule, UsersModule],
       providers: [
         AuthService,
         RedisService,
@@ -41,7 +39,17 @@ describe('2e2 for Auth', () => {
 
     app = moduleRef.createNestApplication();
     jwtService = moduleRef.get<JwtService>(JwtService);
+    authService = moduleRef.get<AuthService>(AuthService);
+    redisService = moduleRef.get<RedisService>(RedisService);
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  afterEach(async () => {
+    await redisService.clearAll();
   });
 
   describe('Login', () => {
@@ -73,11 +81,26 @@ describe('2e2 for Auth', () => {
         .expect(401)
         .expect({ error: 'User not found' });
     });
+
+    it(`/Post error system`, async () => {
+      const errorMessage = 'Login failed';
+      const spyAuthServiceLogout = jest
+        .spyOn(authService, 'login')
+        .mockRejectedValue(new Error(errorMessage));
+
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ ...accountAdmin, username: 'xxx' })
+        .expect(500)
+        .expect({ error: errorMessage });
+
+      spyAuthServiceLogout.mockRestore();
+    });
   });
 
   describe('Logout', () => {
     it(`/Post logout`, async () => {
-      return request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/auth/logout')
         .set('Authorization', `Bearer ${access_token}`)
         .expect(200)
@@ -85,20 +108,47 @@ describe('2e2 for Auth', () => {
           message: 'Logout successful',
         });
     });
+
+    it('/Post error system', async () => {
+      const errorMessage = 'Logout failed';
+      const spyAuthServiceLogout = jest
+        .spyOn(authService, 'logout')
+        .mockRejectedValue(new Error(errorMessage));
+
+      const result = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send(accountAdmin);
+      const newToken = result.body.access_token;
+
+      await request(app.getHttpServer())
+        .post('/auth/logout')
+        .set('Authorization', `Bearer ${newToken}`)
+        .expect(500)
+        .expect({ error: errorMessage });
+
+      spyAuthServiceLogout.mockRestore();
+    }, 20000);
   });
 
   describe('Using token have a problem', () => {
     it(`/GET profile with blacklisted token`, async () => {
-      return request(app.getHttpServer())
+      const result = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send(accountAdmin);
+      const newToken = result.body.access_token;
+
+      await redisService.addToBlacklist({ token: newToken });
+
+      await request(app.getHttpServer())
         .get('/user/profile')
-        .set('Authorization', `Bearer ${access_token}`)
+        .set('Authorization', `Bearer ${newToken}`)
         .expect(401)
         .expect({
           message: 'Token is blacklisted',
           error: 'Unauthorized',
           statusCode: 401,
         });
-    },10000);
+    });
 
     it(`/GET profile with wrong token with null roles`, async () => {
       const result = jwtService.sign({
@@ -114,10 +164,6 @@ describe('2e2 for Auth', () => {
           error: 'Unauthorized',
           statusCode: 401,
         });
-    },10000);
-  });
-
-  afterAll(async () => {
-    await app.close();
+    }, 10000);
   });
 });

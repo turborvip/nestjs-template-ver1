@@ -12,15 +12,13 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { RedisService } from '../database/redis.service';
-require('dotenv').config();
-
 
 @Injectable()
 export class RolesGuard extends JwtAuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private jwtService: JwtService,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
   ) {
     super(); // Calls the base JwtAuthGuard constructor
   }
@@ -40,9 +38,10 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException();
     }
-    const checkTokenBlacklist = await this.redisService.isTokenBlacklisted(token);
-    if(checkTokenBlacklist){
-      throw new UnauthorizedException("Token is blacklisted");
+    const checkTokenBlacklist =
+      await this.redisService.isTokenBlacklisted(token);
+    if (checkTokenBlacklist) {
+      throw new UnauthorizedException('Token is blacklisted');
     }
     // encrypt token using secret key
     try {

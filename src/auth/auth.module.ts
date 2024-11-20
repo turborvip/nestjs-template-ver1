@@ -6,7 +6,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { RedisService } from '../database/redis.service';
 import { DatabaseModule } from '../database/database.module';
-require('dotenv').config();
 
 @Module({
   imports: [
@@ -16,7 +15,7 @@ require('dotenv').config();
       secret: process.env.JWT_SECRET_KEY,
       signOptions: { expiresIn: '3m' },
     }),
-    DatabaseModule
+    DatabaseModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, RedisService],

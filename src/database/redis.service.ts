@@ -3,15 +3,11 @@ import * as Redis from 'ioredis';
 import * as crypto from 'crypto';
 require('dotenv').config();
 
-
 @Injectable()
 export class RedisService {
   private encryptionKey: string;
 
-  constructor(
-    @Inject('REDIS_CONNECTION') private readonly redis: Redis.Redis,
-
-  ) {
+  constructor(@Inject('REDIS_CONNECTION') private readonly redis: Redis.Redis) {
     // Access encryption key from environment variables
     this.encryptionKey = process.env.ENCRYPTION_KEY;
   }

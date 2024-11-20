@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Request, Response, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Request, Response } from '@nestjs/common';
 import { Roles } from '../roles/roles.decorator';
 import { Role } from '../roles/roles.enum';
-import { RolesGuard } from '../roles/roles.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 
@@ -15,7 +14,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Test authorization' })
   @ApiResponse({ status: 200, description: 'hi' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  getProfile(@Request() req) {
+  getProfile() {
     return 'hi';
   }
 
@@ -28,11 +27,15 @@ export class UsersController {
     try {
       const user = req.user;
       const { username, oldPassword, newPassword } = req.body;
-      await this.usersService.changePassword(user, username, oldPassword, newPassword);
+      await this.usersService.changePassword(
+        user,
+        username,
+        oldPassword,
+        newPassword,
+      );
       return res.status(200).json({ message: 'Password changed successfully' });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
-    
   }
 }

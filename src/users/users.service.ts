@@ -47,7 +47,6 @@ export class UsersService {
       where: { username: username },
     });
     if (result) {
-      const { password, ...dataCache } = result;
       await this.redisService.setKeyWithEncrypt({
         key: 'user-' + result.username,
         value: JSON.stringify(result),

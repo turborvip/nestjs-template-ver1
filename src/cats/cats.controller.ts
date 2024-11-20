@@ -17,7 +17,7 @@ export class CatsController {
   @Post('create')
   @ApiOperation({ summary: 'Create a cat' })
   @ApiResponse({ status: 200, description: 'cat created' })
-  create(@Request() req): Object {
+  create(@Request() req): { msg: string } {
     return this.catsService.create(req.body);
   }
 }
