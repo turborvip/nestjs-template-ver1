@@ -7,14 +7,17 @@ export const databaseProviders = [
     useFactory: async () => {
       const dataSource = new DataSource({
         type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        username: 'turborvip',
-        password: '123456a',
-        database: 'turborvip_db_postgresql', // Database 1
+        host: process.env.HOST_POSTGRES,
+        port: parseInt(process.env.PORT_POSTGRES),
+        username: process.env.USERNAME_POSTGRES,
+        password: process.env.PASSWORD_POSTGRES,
+        database: process.env.NAME_DATABASE_POSTGRES,
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: true,
         logging: false,
+        extra: {
+          connectionLimit: parseInt(process.env.CONNECT_POOL_POSTGRES), // Connection pooling
+        },
       });
 
       return dataSource.initialize();
@@ -25,14 +28,17 @@ export const databaseProviders = [
     useFactory: async () => {
       const dataSource = new DataSource({
         type: 'mysql',
-        host: 'localhost',
-        port: 3306,
-        username: 'turborvip',
-        password: '123456a',
-        database: 'turborvip_db_mysql', // Database 2
+        host: process.env.HOST_MYSQL,
+        port: parseInt(process.env.PORT_MYSQL),
+        username: process.env.USERNAME_MYSQL,
+        password: process.env.PASSWORD_MYSQL,
+        database: process.env.NAME_DATABASE_MYSQL, // Database 2
         entities: [],
         synchronize: true,
         logging: false,
+        extra: {
+          connectionLimit: parseInt(process.env.CONNECT_POOL_MYSQL), // Connection pooling
+        },
       });
 
       return dataSource.initialize();
@@ -44,9 +50,9 @@ export const databaseProviders = [
 
     useFactory: async () => {
       const redis = new Redis({
-        host: 'localhost', // Redis server address (localhost or Redis container name)
-        port: 6379, // Redis server port
-        password: '123456a', // Redis password (if set)
+        host: process.env.HOST_REDIS, // Redis server address (localhost or Redis container name)
+        port: parseInt(process.env.PORT_REDIS), // Redis server port
+        password: process.env.PASSWORD_REDIS, // Redis password (if set)
         db: 0, // Redis database index (default is 0)
       });
       // Logging connection and disconnection events

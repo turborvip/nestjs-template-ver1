@@ -1,7 +1,7 @@
+require('dotenv').config();
 import { Injectable, Inject } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import * as crypto from 'crypto';
-require('dotenv').config();
 
 @Injectable()
 export class RedisService {
