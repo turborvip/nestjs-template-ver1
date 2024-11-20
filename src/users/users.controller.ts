@@ -12,7 +12,6 @@ export class UsersController {
 
   @Get('profile')
   @Roles([Role.Admin])
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Test authorization' })
   @ApiResponse({ status: 200, description: 'hi' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -22,7 +21,6 @@ export class UsersController {
 
   @Post('change-password')
   @Roles([Role.Admin, Role.User])
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Test authorization' })
   @ApiResponse({ status: 200, description: 'hi' })
   @ApiResponse({ status: 403, description: 'Forbidden' })

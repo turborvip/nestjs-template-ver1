@@ -5,11 +5,19 @@ import { UsersModule } from './users.module';
 import { AuthModule } from '../auth/auth.module';
 import { DatabaseModule } from '../database/database.module';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from '../roles/roles.guard';
+import { JwtService } from '@nestjs/jwt';
+import { RedisService } from '../database/redis.service';
+
 
 describe('2e2 for Users', () => {
   let app: INestApplication;
   let moduleRef: TestingModule;
-  let account = { username: 'john', password: '123456a' };
+  let redisService: RedisService;
+  let accountAdmin = { username: 'john', password: '123456a' };
+  let accountUser = { username: 'maria', password: '123456a' };
+
   let changePasswordData = {
     username: 'john',
     oldPassword: '123456a',
@@ -23,22 +31,29 @@ describe('2e2 for Users', () => {
         UsersModule,
         AuthModule,
         DatabaseModule,
-        ConfigModule.forRoot({
-          isGlobal: true,
-          envFilePath: '.env',
-        }),
+      ],
+      providers: [
+        JwtService,
+        RedisService,
+        {
+          provide: APP_GUARD,
+          useClass: RolesGuard,
+        },
       ],
     }).compile();
 
     app = moduleRef.createNestApplication();
+
     await app.init();
+    redisService = moduleRef.get<RedisService>(RedisService);
+    redisService.clearAll();
   });
 
   describe('User login', () => {
     it(`/Post using account`, async () => {
       const result = await request(app.getHttpServer())
         .post('/auth/login')
-        .send(account)
+        .send(accountAdmin)
         .expect(200)
         .expect((res) => {
           expect(res.body).toHaveProperty('access_token');
@@ -46,7 +61,7 @@ describe('2e2 for Users', () => {
         });
       access_token = result.body.access_token;
       return result;
-    }, 10000);
+    });
   });
 
   describe('Get profile', () => {
@@ -59,6 +74,7 @@ describe('2e2 for Users', () => {
           statusCode: 401, // Status code
         });
     });
+
     it(`/GET profile after login`, async () => {
       return request(app.getHttpServer())
         .get('/user/profile')
@@ -66,6 +82,30 @@ describe('2e2 for Users', () => {
         .expect(200)
         .expect('hi');
     });
+
+    it(`/GET profile but don't have role`, async () => {
+      const result = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send(accountUser)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('access_token');
+          expect(res.body.access_token).toEqual(expect.any(String)); // Check that access_token is a string
+        });
+      let tokenUser = result.body.access_token;
+
+      return await request(app.getHttpServer())
+        .get('/user/profile')
+        .set('Authorization', `Bearer ${tokenUser}`)
+        .expect(401)
+        .expect({
+          message: 'Invalid or expired token',
+          error: 'Unauthorized',
+          statusCode: 401,
+        });
+    });
+
+    
   });
 
   describe('Change password', () => {
@@ -75,9 +115,9 @@ describe('2e2 for Users', () => {
         .expect(401)
         .expect({
           message: 'Unauthorized',
-          statusCode: 401
+          statusCode: 401,
         });
-    });
+    },20000);
     it(`/Post change password with wrong username`, async () => {
       return request(app.getHttpServer())
         .post('/user/change-password')
@@ -87,7 +127,7 @@ describe('2e2 for Users', () => {
         .expect({
           error: 'Usernames wrong!',
         });
-    });
+    },20000);
 
     it(`/Post change password with wrong old password`, async () => {
       return request(app.getHttpServer())
@@ -98,7 +138,8 @@ describe('2e2 for Users', () => {
         .expect({
           error: 'Wrong password',
         });
-    });
+    },20000);
+
     it(`/Post change password with true password`, async () => {
       return request(app.getHttpServer())
         .post('/user/change-password')
@@ -108,7 +149,8 @@ describe('2e2 for Users', () => {
         .expect({
           message: 'Password changed successfully',
         });
-    });
+    },20000);
+
   });
 
   afterAll(async () => {

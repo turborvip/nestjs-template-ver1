@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+const Redis = require('ioredis');
 import { DataSource } from 'typeorm';
 
 export const databaseProviders = [
@@ -42,7 +42,7 @@ export const databaseProviders = [
   {
     provide: 'REDIS_CONNECTION', // Provider for Redis connection
     
-    useFactory: async () => {
+    useFactory: async() => {
       const redis = new Redis({
         host: 'localhost',  // Redis server address (localhost or Redis container name)
         port: 6379,         // Redis server port
@@ -53,13 +53,13 @@ export const databaseProviders = [
       redis.on('connect', () => {
         console.log('Redis connected');
       });
-
+      
       redis.on('ready', () => {
         console.log('Redis connection is ready');
       });
 
       redis.on('close', () => {
-        console.log('Redis connection closed');
+        console.warn('Redis connection closed');
       });
 
       redis.on('error', (err) => {

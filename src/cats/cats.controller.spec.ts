@@ -2,12 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CatsController } from './cats.controller';
 import { CatsService } from './cats.service';
 import { Cat } from './interfaces/cat.interface';
+import { CatsModule } from './cats.module';
 
 describe('AppController', () => {
   let app: TestingModule;
 
   beforeAll(async () => {
     app = await Test.createTestingModule({
+      imports: [CatsModule],
       controllers: [CatsController],
       providers: [CatsService],
     }).compile();

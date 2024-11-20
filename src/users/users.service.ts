@@ -36,8 +36,9 @@ export class UsersService {
   }
 
   async findOne(username: string): Promise<User> | undefined {
-    try {
-      const cacheResult = await this.redisService.getKeyWithDecrypt('user-' + username);
+    const cacheResult = await this.redisService.getKeyWithDecrypt(
+      'user-' + username,
+    );
     if (cacheResult) {
       cacheResult.isFromCache = true;
       return cacheResult;
@@ -53,10 +54,6 @@ export class UsersService {
       });
     }
     return result;
-    } catch (error) {
-      throw Error(error);
-    }
-    
   }
 
   /**
@@ -97,5 +94,4 @@ export class UsersService {
       throw new Error('Wrong password');
     }
   }
-
 }

@@ -11,8 +11,9 @@ import { Role } from './roles.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { jwtConstants } from '../auth/constants';
 import { RedisService } from '../database/redis.service';
+require('dotenv').config();
+
 
 @Injectable()
 export class RolesGuard extends JwtAuthGuard implements CanActivate {
@@ -46,9 +47,9 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
     // encrypt token using secret key
     try {
       const decoded = this.jwtService.verify(token, {
-        secret: jwtConstants.secret,
+        secret: process.env.JWT_SECRET_KEY,
       }); // Verifying the token
-      console.log('Decoded token:', decoded);
+      // console.log('Decoded token:', decoded);
 
       // Add your role-checking logic here
       // Example: Check if the user has the required role
@@ -64,7 +65,7 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
       request.user = decoded;
       return true;
     } catch (error) {
-      console.error('Error verifying token:', error.message);
+      console.info('Error verifying token:', error.message);
       throw new UnauthorizedException('Invalid or expired token');
     }
   }

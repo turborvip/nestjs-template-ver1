@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { hashUtil } from '../util/hash.util';
@@ -16,7 +16,8 @@ export class AuthService {
     const user = await this.usersService.findOne(username);
 
     if (user) {
-      if (await hashUtil.compare(pass, user.password)) {
+      const checkPass = await hashUtil.compare(pass, user.password)
+      if (checkPass) {
         const { password, ...result } = user;
         return result;
       } else {
@@ -32,6 +33,9 @@ export class AuthService {
 
   async login(username: string, password: string) {
     const user = await this.validateUser(username, password);
+    if(user?.err) {
+      throw new UnauthorizedException(user.err);
+    }
     const payload = {
       username: user.username,
       sub: user.userId,
@@ -45,10 +49,6 @@ export class AuthService {
   }
 
   async logout(token: string,): Promise<void> {
-    try {
       await this.redisService.addToBlacklist({token});
-    } catch (error) {
-      throw new Error('Logout failed');
-    }
   }
 }

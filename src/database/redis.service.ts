@@ -1,27 +1,27 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
+import * as Redis from 'ioredis';
 import * as crypto from 'crypto';
+require('dotenv').config();
+
 
 @Injectable()
 export class RedisService {
   private encryptionKey: string;
 
   constructor(
-    @Inject('REDIS_CONNECTION') private readonly redis: Redis,
-    
-    private configService: ConfigService, // Inject ConfigService
+    @Inject('REDIS_CONNECTION') private readonly redis: Redis.Redis,
+
   ) {
     // Access encryption key from environment variables
-    this.encryptionKey = this.configService.get<string>('ENCRYPTION_KEY');
+    this.encryptionKey = process.env.ENCRYPTION_KEY;
   }
 
-  private async encrypt(text: string): Promise<string> {
+  encrypt(text: string): string {
     if (!text) {
       throw new Error('No text provided for encryption');
     }
 
-    const key = Buffer.from(await this.encryptionKey.padEnd(32, '\0'), 'utf-8');
+    const key = Buffer.from(this.encryptionKey.padEnd(32, '\0'), 'utf-8');
 
     const iv = crypto.randomBytes(16);
 
@@ -35,7 +35,7 @@ export class RedisService {
     return result;
   }
 
-  private decrypt(encryptedText: string): string {
+  decrypt(encryptedText: string): string {
     if (!encryptedText) {
       throw new Error('No encrypted text provided for decryption');
     }
@@ -60,12 +60,28 @@ export class RedisService {
     return JSON.parse(decrypted);
   }
 
-  async setKeyWithEncrypt({key, value, time}: {key: string, value: string, time?: number}): Promise<'OK' | null> {
+  async setKeyWithEncrypt({
+    key,
+    value,
+    time,
+  }: {
+    key: string;
+    value: string;
+    time?: number;
+  }): Promise<'OK' | null> {
     const encryptedValue = await this.encrypt(value);
     return await this.redis.set(key, encryptedValue, 'EX', time || 600);
   }
 
-  async setKey({key, value, time}: {key: string, value: string, time?: number}): Promise<'OK' | null> {
+  async setKey({
+    key,
+    value,
+    time,
+  }: {
+    key: string;
+    value: string;
+    time?: number;
+  }): Promise<'OK' | null> {
     return await this.redis.set(key, value, 'EX', time || 600);
   }
   async getKeyWithDecrypt(key: string): Promise<any | null> {
@@ -86,12 +102,18 @@ export class RedisService {
     return this.redis.exists(key);
   }
 
-   // Thêm token vào blacklist
-   async addToBlacklist({token, ttl = 3600}: {token: string, ttl?: number}): Promise<void> {
+  // Thêm token vào blacklist
+  async addToBlacklist({
+    token,
+    ttl = 3600,
+  }: {
+    token: string;
+    ttl?: number;
+  }): Promise<void> {
     const key = `blacklist:token:${token}`;
 
     await this.redis.sadd('blacklist', key);
-    
+
     await this.redis.setex(key, ttl, token);
     console.log(`Token added to blacklist with TTL: ${key}`);
   }
@@ -108,5 +130,10 @@ export class RedisService {
     const key = `blacklist:token:${token}`;
     await this.redis.srem('blacklist', key);
     console.log(`Token removed from blacklist: ${key}`);
+  }
+
+  async clearAll(): Promise<string> {
+    const result = await this.redis.flushall();
+    return result;
   }
 }

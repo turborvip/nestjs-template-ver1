@@ -21,8 +21,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('login')
-  async signIn(@Body() signInDto: Record<string, any>) {
-    return await this.authService.login(signInDto.username, signInDto.password);
+  async signIn(@Body() signInDto: Record<string, any>, @Response() res) {
+    try {
+      const result = await this.authService.login(signInDto.username, signInDto.password);
+      return res.status(200).json(result);
+    } catch (error) {
+      return res
+        .status(error?.status || 500)
+        .json({ error: error.message });
+    }
   }
 
   @HttpCode(HttpStatus.OK)
@@ -36,11 +43,5 @@ export class AuthController {
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
-  }
-
-  @Get('profile')
-  @Public()
-  getProfile(@Request() req) {
-    return { user: req.user };
   }
 }
