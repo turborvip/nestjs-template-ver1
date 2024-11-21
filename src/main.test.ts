@@ -5,7 +5,6 @@ import { SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
 import { AppModule } from './app.module';
 
-// Mock các thư viện sử dụng trong file chính
 jest.mock('dotenv', () => ({
   config: jest.fn(),
 }));
@@ -13,12 +12,7 @@ jest.mock('dotenv', () => ({
 jest.mock('@nestjs/core', () => ({
   NestFactory: {
     create: jest.fn(() => ({
-      listen: jest.fn().mockImplementation(() => {
-        //   return new Promise((resolve, reject) => {
-        //     // Bạn có thể tùy chỉnh việc reject hoặc resolve tại đây
-        //     reject(new Error('Port already in use'));  // Mô phỏng lỗi
-        //   });
-      }),
+      listen: jest.fn().mockImplementation(() => {}),
       close: jest.fn(),
     })),
   },
@@ -38,28 +32,26 @@ describe('Bootstrap Function', () => {
   let app: INestApplication;
 
   beforeEach(() => {
-    // Tạo mock ứng dụng NestJS
     app = {
       listen: jest.fn(),
       close: jest.fn(),
     } as unknown as INestApplication;
 
-    // Mock NestFactory.create trả về ứng dụng mock
     (NestFactory.create as jest.Mock).mockResolvedValue(app);
   });
 
   afterEach(() => {
-    jest.clearAllMocks(); // Xóa các mock sau mỗi bài kiểm tra
+    jest.clearAllMocks();
   });
 
   it('should call dotenv.config to load environment variables', async () => {
     await bootstrap();
-    expect(dotenv.config).toHaveBeenCalled(); // Đảm bảo dotenv.config được gọi
+    expect(dotenv.config).toHaveBeenCalled();
   });
 
   it('should create a Nest application using AppModule', async () => {
     await bootstrap();
-    expect(NestFactory.create).toHaveBeenCalledWith(AppModule); // Kiểm tra AppModule được sử dụng
+    expect(NestFactory.create).toHaveBeenCalledWith(AppModule);
   });
 
   it('should set up Swagger with the correct configuration', async () => {
@@ -67,7 +59,7 @@ describe('Bootstrap Function', () => {
     expect(SwaggerModule.setup).toHaveBeenCalledWith(
       'api',
       app,
-      expect.any(Function), // Hàm tạo document
+      expect.any(Function),
       expect.objectContaining({
         customSiteTitle: 'API Documentation',
         swaggerOptions: { persistAuthorization: true },
@@ -76,15 +68,15 @@ describe('Bootstrap Function', () => {
   });
 
   it('should listen on the default port 3000 when no environment variable is set', async () => {
-    delete process.env.PORT; // Không đặt PORT
+    delete process.env.PORT;
     await bootstrap();
-    expect(app.listen).toHaveBeenCalledWith(3000); // Kiểm tra cổng mặc định
+    expect(app.listen).toHaveBeenCalledWith(3000);
   });
 
   it('should listen on the specified port from environment variable', async () => {
-    process.env.PORT = '4000'; // Đặt PORT trong biến môi trường
+    process.env.PORT = '4000';
     await bootstrap();
-    expect(app.listen).toHaveBeenCalledWith('4000'); // Kiểm tra cổng được chỉ định
+    expect(app.listen).toHaveBeenCalledWith(4000);
   });
 
   it('should handle error if NestFactory.create fails', async () => {
@@ -108,18 +100,8 @@ describe('Bootstrap Function', () => {
     try {
       await bootstrap();
     } catch (error) {
-      expect(error.message).toBe(errorMessage); // Kiểm tra lỗi khi setup Swagger
+      expect(error.message).toBe(errorMessage);
     }
   });
-
-  //   it('should handle error if app.listen fails', async () => {
-  //     const errorMessage = 'Port already in use';
-
-  //     // Đảm bảo listen trả về một Promise và mock bị reject
-  //     try {
-  //       await bootstrap();
-  //     } catch (error) {
-  //       expect(error.message).toBe(errorMessage); // Kiểm tra lỗi khi app.listen thất bại
-  //     }
-  //   });
+  
 });
