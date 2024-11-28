@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Role } from '../roles/roles.enum';
+import { Role } from '../constants/roles.enum';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { hashUtil } from '../util/hash.util';
 import { RedisService } from '../database/redis.service';
+import { CreateUserDto } from './dto/createUser.dto';
 
 @Injectable()
 export class UsersService {
@@ -92,5 +93,22 @@ export class UsersService {
     } else {
       throw new Error('Wrong password');
     }
+  }
+
+  async register(dataBody: CreateUserDto)
+  {
+    // Set default password
+    if(dataBody?.password) {
+      dataBody.password = await hashUtil.hash(dataBody.password);
+    }else{
+      dataBody.password = await hashUtil.hash(process.env.DEFAULT_PASSWORD);
+    }
+
+    // Save
+    await this.userRepository.save(dataBody).then((result) => {
+      return result;
+    }).catch((error) => {
+      throw error;
+    })
   }
 }

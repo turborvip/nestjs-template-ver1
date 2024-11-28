@@ -6,9 +6,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from './roles.decorator';
-import { Role } from './roles.enum';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ROLES_KEY } from '../decorators/roles.decorator';
+import { Role } from '../constants/roles.enum';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { RedisService } from '../database/redis.service';
@@ -57,14 +57,12 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
         context.getHandler(),
       );
       if (requiredRoles && !this.hasRequiredRole(decoded, requiredRoles)) {
-        console.log('User does not have required roles');
         throw new UnauthorizedException('Insufficient permissions');
       }
       const request = context.switchToHttp().getRequest();
       request.user = decoded;
       return true;
     } catch (error) {
-      console.info('Error verifying token:', error.message);
       throw new UnauthorizedException('Invalid or expired token');
     }
   }

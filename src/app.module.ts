@@ -1,12 +1,14 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CatsModule } from './cats/cats.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './roles/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 import { RedisService } from './database/redis.service';
 import { DatabaseModule } from './database/database.module';
+import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { RolesGuard } from './guards/roles.guard';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { CatchEverythingFilter } from './filters/catchEveryThing.filter';
 
 @Module({
   imports: [
@@ -22,6 +24,14 @@ import { DatabaseModule } from './database/database.module';
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
+    {
+      provide: APP_FILTER,
+      useClass: CatchEverythingFilter,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

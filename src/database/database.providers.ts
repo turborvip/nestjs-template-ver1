@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 export const databaseProviders = [
   {
     provide: 'DATA_SOURCE_POSTGRES',
+    inject: [],
     useFactory: async () => {
       const dataSource = new DataSource({
         type: 'postgres',

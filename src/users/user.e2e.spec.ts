@@ -4,8 +4,6 @@ import { INestApplication } from '@nestjs/common';
 import { UsersModule } from './users.module';
 import { AuthModule } from '../auth/auth.module';
 import { DatabaseModule } from '../database/database.module';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from '../roles/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 import { RedisService } from '../database/redis.service';
 
@@ -29,10 +27,6 @@ describe('2e2 for Users', () => {
       providers: [
         JwtService,
         RedisService,
-        {
-          provide: APP_GUARD,
-          useClass: RolesGuard,
-        },
       ],
     }).compile();
 

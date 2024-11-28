@@ -8,9 +8,9 @@ import {
   Response,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Public } from './public.decorator';
-import { Role } from '../roles/roles.enum';
-import { Roles } from '../roles/roles.decorator';
+import { Public } from '../decorators/public.decorator';
+import { Role } from '../constants/roles.enum';
+import { Roles } from '../decorators/roles.decorator';
 
 @Controller('auth')
 export class AuthController {

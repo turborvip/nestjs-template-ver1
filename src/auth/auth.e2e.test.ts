@@ -3,8 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AuthModule } from './auth.module';
 import { DatabaseModule } from '../database/database.module';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from '../roles/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 import { RedisService } from '../database/redis.service';
 import { AuthService } from './auth.service';
@@ -30,10 +28,6 @@ describe('2e2 for Auth', () => {
         JwtService,
         UsersService,
         ...userProviders,
-        {
-          provide: APP_GUARD,
-          useClass: RolesGuard,
-        },
       ],
     }).compile();
 
