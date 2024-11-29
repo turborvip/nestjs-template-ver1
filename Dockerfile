@@ -15,6 +15,9 @@ RUN npm run build
 
 ENV NODE_ENV production
 
+# Mở port 3000 (ghi chú port ứng dụng sử dụng)
+EXPOSE 6575
+
 # Khởi chạy server
 CMD ["npm", "run", "start:prod"]
 
