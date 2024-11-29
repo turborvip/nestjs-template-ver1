@@ -6,19 +6,25 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { RedisService } from '../database/redis.service';
 import { DatabaseModule } from '../database/database.module';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET_KEY,
-      signOptions: { expiresIn: '3m' },
+    JwtModule.registerAsync({
+      imports: [],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET_KEY'), // Lấy giá trị từ ConfigService
+        signOptions: { expiresIn: '3m' },
+      }),
+      inject: [ConfigService],
     }),
     DatabaseModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, RedisService],
-  exports: [AuthService],
+  exports: [AuthService,JwtModule],
 })
 export class AuthModule {}
+console.log('process.env.JWT_SECRET_KEY',process.env.JWT_SECRET_KEY)

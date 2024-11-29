@@ -6,6 +6,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 
 export async function bootstrap(): Promise<INestApplication> {
+  
   const nodeEnv = process.env.NODE_ENV || 'development';
 
   // Load file .env phù hợp

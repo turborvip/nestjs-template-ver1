@@ -9,6 +9,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { RolesGuard } from './guards/roles.guard';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { CatchEverythingFilter } from './filters/catchEveryThing.filter';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -16,6 +17,10 @@ import { CatchEverythingFilter } from './filters/catchEveryThing.filter';
     CatsModule,
     AuthModule,
     DatabaseModule,
+    ConfigModule.forRoot({
+      envFilePath: ['.env.development', '.env.production'],
+      isGlobal: true,
+    })
   ],
   providers: [
     JwtService,
