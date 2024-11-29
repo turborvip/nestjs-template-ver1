@@ -45,7 +45,6 @@ export const databaseProviders = [
       return dataSource.initialize();
     },
   },
-
   {
     provide: 'REDIS_CONNECTION', // Provider for Redis connection
 
