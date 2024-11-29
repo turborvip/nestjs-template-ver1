@@ -3,20 +3,22 @@ import { RedisService } from './redis.service';
 import { DatabaseModule } from './database.module';
 import { databaseProviders } from './database.providers';
 import Redis from 'ioredis';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 describe('RedisService', () => {
   let service: RedisService;
   let redisClient: Redis;
+  let configService: ConfigService;
 
   beforeEach(async () => {
     jest.restoreAllMocks();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DatabaseModule],
+      imports: [DatabaseModule, ConfigModule],
       providers: [RedisService, ...databaseProviders],
     }).compile();
     redisClient = await databaseProviders
       .find((provider) => provider.provide === 'REDIS_CONNECTION')
-      .useFactory();
+      .useFactory(configService);
 
     service = module.get<RedisService>(RedisService);
   });

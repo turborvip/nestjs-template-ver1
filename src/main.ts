@@ -8,7 +8,7 @@ import * as path from 'path';
 export async function bootstrap(): Promise<INestApplication> {
   
   const nodeEnv = process.env.NODE_ENV || 'development';
-  console.log('process.env.NODE_ENV', process.env.NODE_ENV);
+  console.log('process.env.NODE_ENV', process.env.NODE_ENV, path.resolve(process.cwd(), `.env.${nodeEnv}`));
   // Load file .env phù hợp
   dotenv.config({ path: path.resolve(process.cwd(), `.env.${nodeEnv}`) });
 

@@ -1,18 +1,18 @@
 const Redis = require('ioredis');
+import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 
 export const databaseProviders = [
   {
     provide: 'DATA_SOURCE_POSTGRES',
-    inject: [],
-    useFactory: async () => {
+    useFactory: async (configService: ConfigService) => {
       const dataSource = new DataSource({
         type: 'postgres',
-        host: process.env.HOST_POSTGRES,
-        port: parseInt(process.env.PORT_POSTGRES),
-        username: process.env.USERNAME_POSTGRES,
-        password: process.env.PASSWORD_POSTGRES,
-        database: process.env.NAME_DATABASE_POSTGRES,
+        host: configService.get<string>('HOST_POSTGRES'),
+        port: configService.get<number>('PORT_POSTGRES'),
+        username: configService.get<string>('USERNAME_POSTGRES'),
+        password: configService.get<string>('PASSWORD_POSTGRES'),
+        database: configService.get<string>('NAME_DATABASE_POSTGRES'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: true,
         logging: false,
@@ -23,37 +23,38 @@ export const databaseProviders = [
 
       return dataSource.initialize();
     },
+    inject: [ConfigService],
   },
   {
     provide: 'DATA_SOURCE_MYSQL', // Name of the second database provider
-    useFactory: async () => {
+    useFactory: async (configService: ConfigService) => {
       const dataSource = new DataSource({
         type: 'mysql',
-        host: process.env.HOST_MYSQL,
-        port: parseInt(process.env.PORT_MYSQL),
-        username: process.env.USERNAME_MYSQL,
-        password: process.env.PASSWORD_MYSQL,
-        database: process.env.NAME_DATABASE_MYSQL, // Database 2
+        host: configService.get<string>('HOST_MYSQL'),
+        port: configService.get<number>('PORT_MYSQL'),
+        username: configService.get<string>('USERNAME_MYSQL'),
+        password: configService.get<string>('PASSWORD_MYSQL'),
+        database: configService.get<string>('NAME_DATABASE_MYSQL'), // Database 2
         entities: [],
         synchronize: true,
         logging: false,
         extra: {
-          connectionLimit: parseInt(process.env.CONNECT_POOL_MYSQL), // Connection pooling
+          connectionLimit: configService.get<number>('CONNECT_POOL_MYSQL'), // Connection pooling
         },
       });
 
       return dataSource.initialize();
     },
+    inject: [ConfigService],
   },
   {
     provide: 'REDIS_CONNECTION', // Provider for Redis connection
 
-    useFactory: async () => {
-      console.log('first',process.env.HOST_REDIS)
+    useFactory: async (configService: ConfigService) => {
       const redis = new Redis({
-        host: process.env.HOST_REDIS, // Redis server address (localhost or Redis container name)
-        port: parseInt(process.env.PORT_REDIS), // Redis server port
-        password: process.env.PASSWORD_REDIS, // Redis password (if set)
+        host: configService.get<string>('HOST_REDIS'), // Redis server address (localhost or Redis container name)
+        port: configService.get<number>('PORT_REDIS'), // Redis server port
+        password: configService.get<string>('PASSWORD_REDIS'), // Redis password (if set)
         db: 0, // Redis database index (default is 0)
       });
       // Logging connection and disconnection events
@@ -78,5 +79,6 @@ export const databaseProviders = [
       });
       return redis;
     },
+    inject: [ConfigService],
   },
 ];

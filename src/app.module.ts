@@ -18,7 +18,7 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     DatabaseModule,
     ConfigModule.forRoot({
-      envFilePath: ['.env.development', '.env.production'],
+      envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`],
       isGlobal: true,
     })
   ],
