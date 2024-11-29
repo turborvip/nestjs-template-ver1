@@ -24,7 +24,6 @@ import { ConfigService } from '@nestjs/config';
   ],
   controllers: [AuthController],
   providers: [AuthService, RedisService],
-  exports: [AuthService,JwtModule],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
-console.log('process.env.JWT_SECRET_KEY',process.env.JWT_SECRET_KEY)

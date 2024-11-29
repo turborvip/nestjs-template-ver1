@@ -49,6 +49,7 @@ export const databaseProviders = [
     provide: 'REDIS_CONNECTION', // Provider for Redis connection
 
     useFactory: async () => {
+      console.log('first',process.env.HOST_REDIS)
       const redis = new Redis({
         host: process.env.HOST_REDIS, // Redis server address (localhost or Redis container name)
         port: parseInt(process.env.PORT_REDIS), // Redis server port
