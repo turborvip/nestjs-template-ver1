@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   nestjs-initial:
-    build:
-      context: .
-      dockerfile: Dockerfile # Dockerfile của bạn
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile # Dockerfile của bạn
     image: turborvip/nestjs-initial:latest
     container_name: nestjs-initial-container
     ports:
