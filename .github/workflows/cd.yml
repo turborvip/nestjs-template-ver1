@@ -21,5 +21,5 @@ jobs:
       run: sudo docker rm -f nestjs-initial-container || true
     - name: Run Docker Container
       run: sudo docker run -d -p 3788:6575 --name nestjs-initial-container turborvip/nestjs-initial
-    - name: Docker-compose down
-      run: sudo docker-compose up -d
+    - name: Docker-compose up
+      run: sudo docker-compose up --no-recreate
