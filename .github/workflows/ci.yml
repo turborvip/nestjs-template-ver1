@@ -24,4 +24,4 @@ jobs:
     - name: Build the Docker image
       run: sudo docker build -t nestjs-initial-image .
     - name: Push to Dockerhub
-      run: sudo docker push turborvip/nestjs-initial-image:latest
+      run: docker push turborvip/nestjs-initial-image:latest
