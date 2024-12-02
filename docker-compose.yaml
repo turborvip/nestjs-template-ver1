@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  nestjs-initial:
+    build:
+      context: .
+      dockerfile: Dockerfile # Dockerfile của bạn
+    image: turborvip/nestjs-initial:latest
+    container_name: nestjs-initial-container
+    ports:
+      - "3788:6575" # Expose port của ứng dụng Node.js
+    depends_on:
+      - redis  # Đảm bảo Redis khởi chạy trước
+      - postgresql
+      - mysql
+    networks:
+      - turborvip-network # Kết nối vào cùng network với Redis
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:latest  
+    container_name: redis-container
+    ports:
+      - "6379:6379"  # Expose Redis port
+    environment:
+      - REDIS_PASSWORD=123456a  
+    command: ["redis-server", "--requirepass", "123456a"]  
+    volumes:
+      - redis-data:/data  # Persistent storage for Redis data
+    networks:
+      - turborvip-network  # Network name
+    restart: always  
+    logging:
+      driver: "json-file"  # Log format, can change as needed
+      options:
+        max-size: "10m"  # Limit log file size
+        max-file: "3"  # Limit the number of log files
+    mem_limit: 3g  # Limit memory for the container
+    mem_reservation: 1g  # Memory reservation warning threshold
+    cpus: 0.5  # CPU allocation (50%)
+
+  postgresql:
+    image: postgres:latest   # PostgreSQL image
+    container_name: postgresql-container
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port
+    volumes:
+      - postgres-data:/var/lib/postgresql/data  # Persistent storage for PostgreSQL
+    networks:
+      - turborvip-network  # Network name
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    mem_limit: 2g  # Limit memory for the container
+    mem_reservation: 1g  # Memory reservation warning threshold
+    cpus: 1  # CPU allocation (100%)
+
+  mysql:
+    image: mysql:latest  # MySQL image
+    container_name: mysql-container
+    ports:
+      - "3306:3306"  # Expose MySQL port
+    volumes:
+      - mysql-data:/var/lib/mysql  # Persistent storage for MySQL
+    networks:
+      - turborvip-network  # Network name
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    mem_limit: 2g  # Limit memory for the container
+    mem_reservation: 1g  # Memory reservation warning threshold
+    cpus: 1  # CPU allocation (100%)
+    
+volumes:
+  redis-data:
+    driver: local  # Persistent volume for Redis
+  postgres-data:
+    driver: local  # Persistent volume for PostgreSQL
+  mysql-data:
+    driver: local  # Persistent volume for MySQL
+
+networks:
+  turborvip-network:
+    driver: bridge  # Bridge network for both Redis and PostgreSQL
+    driver_opts:
+      com.docker.network.bridge.name: "turborvip-net"  # Network name
