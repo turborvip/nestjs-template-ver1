@@ -18,4 +18,4 @@ jobs:
     - name: Delete Old docker container
       run: sudo docker rm -f nestjs-initial-container || true
     - name: Run Docker Container
-      run: sudo docker run -d -p 3788:6575 --name nestjs-initial-container turborvip/nestjs-initial-image
+      run: sudo docker run -d -p 3788:6575 --name nestjs-initial-container turborvip/nestjs-initial
