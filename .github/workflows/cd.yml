@@ -14,12 +14,12 @@ jobs:
 
     # steps:
     # - name: Stop Docker Container
-    #   run: sudo docker stop turborvip/nestjs-template-ver1
+    #   run: sudo docker stop nestjs-template-ver1
     # - name: Delete Docker Container
     #   run: sudo docker system prune -af --volumes
     # - name: Pull Docker image
-    #   run: sudo docker pull turborvip/nestjs-template-ver1:main
+    #   run: sudo docker pull turborvip/nestjs-template-ver1:latest 
     # - name: Run Docker Container
-    #   run: sudo docker run -d -p 3788:6575 --name nestjs-initial-container turborvip/nestjs-initial
+    #   run: sudo docker run -d -p 3788:6575 --name nestjs-template-ver1 turborvip/nestjs-template-ver1:latest
     # - name: Docker-compose up
-    #   run: sudo docker-compose up --no-recreate
+    #   run: sudo docker-compose up -d
